@@ -1,10 +1,9 @@
 const express = require("express");
 const hbs = require("hbs");
+const app = express();
 
 // require spotify-web-api-node package here:
 const SpotifyWebApi = require("spotify-web-api-node");
-
-const app = express();
 
 app.set("view engine", "hbs");
 app.set("views", __dirname + "/views");
@@ -36,8 +35,8 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
-app.get("/search/", (req, res) => {
-  const q = req.query.q;
+app.get("/artists/", (req, res) => {
+  const q = req.query.search;
   console.log(q);
   spotifyApi
     .searchArtists(q)
@@ -52,6 +51,33 @@ app.get("/search/", (req, res) => {
     });
 });
 
+app.get("/albums/:artistId", (req, res) => {
+  const artistId = req.params.artistId;
+  spotifyApi
+    .getArtistAlbums(artistId)
+    .then(data => {
+      const items = data.body.items;
+
+      res.render("albums", { albumList: items });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
+
+app.get("/tracks/:albumId", (req, res) => {
+  const albumId = req.params.albumId;
+
+  spotifyApi
+    .getAlbumTracks(albumId)
+    .then(data => {
+      const items = data.body.items;
+      res.render("tracks", { items });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
 app.listen(3001, () =>
   console.log("My Spotify project running on port 3001 🎧 🥁 🎸 🔊")
 );
